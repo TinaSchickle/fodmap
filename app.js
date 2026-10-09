@@ -1,114 +1,177 @@
 (function () {
-  const KEY = 'fodmap-v1';
-  const base = window.WORDS || { yes: [], no: [] };
+  const BASE = `${window.SUPABASE_URL}/rest/v1`;
+  const HEADERS = { apikey: window.SUPABASE_KEY, 'Content-Type': 'application/json' };
+  const CACHE_KEY = 'fodmap-cache-v2';
 
-  // Gespeichert wird nur, was in der App passiert: hinzugefügte und durchgestrichene Wörter.
-  let user = { added: { yes: [], no: [] }, crossed: [] };
-  try {
-    const raw = JSON.parse(localStorage.getItem(KEY));
-    if (raw) user = { added: { yes: [], no: [], ...raw.added }, crossed: raw.crossed || [] };
-  } catch (e) { /* kein Speicher verfügbar – läuft trotzdem */ }
-
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(user)); } catch (e) {} };
-  const norm = (s) => s.trim().toLowerCase();
   const $ = (id) => document.getElementById(id);
+  const norm = (s) => s.trim().toLowerCase();
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  function words(kind) {
-    const seen = new Set();
-    return [...base[kind], ...user.added[kind]]
-      .map((w) => w.trim())
-      .filter((w) => w && !seen.has(norm(w)) && seen.add(norm(w)))
-      .sort((a, b) => a.localeCompare(b, 'de'));
-  }
-  const isCrossed = (w) => user.crossed.includes(norm(w));
-  const kindOf = (w) => {
-    const n = norm(w);
-    if (words('no').some((x) => norm(x) === n)) return 'no';
-    if (words('yes').some((x) => norm(x) === n)) return 'yes';
-    return null;
-  };
+  let foods = [];
+  let todos = [];
+  const openSet = new Set(['yes']); // aufgeklappte Gruppen (Schlüssel: 'yes', 'no', 'yes|Obst' …)
 
-  function esc(s) {
-    return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  async function api(path, opts = {}) {
+    const res = await fetch(BASE + path, { ...opts, headers: { ...HEADERS, ...(opts.headers || {}) } });
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.status === 204 ? null : res.json();
   }
 
-  function renderLists() {
-    const q = norm($('search').value);
-    for (const [kind, id] of [['no', 'listNo'], ['yes', 'listYes']]) {
-      $(id).innerHTML = words(kind).map((w) =>
-        `<li data-w="${esc(w)}" class="${isCrossed(w) ? 'crossed' : ''}${q && norm(w).includes(q) ? ' hit' : ''}">${esc(w)}</li>`
-      ).join('');
+  function setStatus(msg) {
+    $('status').hidden = !msg;
+    $('status').textContent = msg || '';
+  }
+
+  async function load() {
+    try {
+      const cached = JSON.parse(localStorage.getItem(CACHE_KEY));
+      if (cached) { foods = cached.foods; todos = cached.todos; render(); }
+    } catch (e) {}
+    try {
+      [foods, todos] = await Promise.all([
+        api('/fodmap_foods?select=*&order=name&limit=2000'),
+        api('/fodmap_todos?select=*&order=created_at'),
+      ]);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ foods, todos })); } catch (e) {}
+      setStatus('');
+    } catch (e) {
+      setStatus(foods.length ? 'Offline – zeige zuletzt geladene Liste.' : 'Konnte die Liste nicht laden.');
+    }
+    render();
+  }
+
+  const cacheNow = () => { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ foods, todos })); } catch (e) {} };
+
+  function portionText(f) {
+    if (f.rating === 'red') return 'meiden';
+    if (f.unlimited) return 'ohne Grenze';
+    const p = `${Number(f.safe_portion)} ${f.unit}`;
+    return f.rating === 'amber' ? `max. ${p}` : `bis ${p}`;
+  }
+
+  function foodRow(f) {
+    return `<li class="food ${f.rating}${f.crossed ? ' crossed' : ''}" data-id="${f.id}">` +
+      `<span class="name">${esc(f.name)}</span>` +
+      (f.verify ? '<span class="q" title="Wert unsicher">?</span>' : '') +
+      `<span class="portion">${portionText(f)}</span></li>`;
+  }
+
+  function groupHtml(key, title, items, q) {
+    const cats = new Map();
+    for (const f of items) {
+      if (!cats.has(f.category)) cats.set(f.category, []);
+      cats.get(f.category).push(f);
+    }
+    const inner = [...cats.entries()].map(([cat, list]) => {
+      const k = `${key}|${cat}`;
+      return `<details class="cat" data-key="${esc(k)}"${q || openSet.has(k) ? ' open' : ''}>` +
+        `<summary>${esc(cat)}<span class="count">${list.length}</span></summary>` +
+        `<ul class="foods">${list.map(foodRow).join('')}</ul></details>`;
+    }).join('');
+    return `<details class="group ${key}" data-key="${key}"${q || openSet.has(key) ? ' open' : ''}>` +
+      `<summary>${title}<span class="count">${items.length}</span></summary>` +
+      `<div class="inner">${inner || '<p class="hint">Nichts gefunden.</p>'}</div></details>`;
+  }
+
+  function render() {
+    const raw = $('search').value;
+    const q = norm(raw);
+    const extra = $('showAdditional').checked;
+    const list = foods.filter((f) => (extra || f.tier === 'basic' || q) && (!q || norm(f.name).includes(q)));
+    const yes = list.filter((f) => f.rating !== 'red');
+    const no = list.filter((f) => f.rating === 'red');
+
+    $('accordions').innerHTML =
+      groupHtml('yes', 'Mjam 😋', yes, q) + groupHtml('no', 'Igitt 🙅', no, q);
+
+    const nf = $('notFound');
+    nf.hidden = !(q && !list.length);
+    if (!nf.hidden) {
+      nf.innerHTML = `Nicht gefunden<button type="button" id="addFromSearch">„${esc(raw.trim())}“ als To-do merken</button>`;
+    }
+    if (q && !list.length) $('accordions').innerHTML = '';
+
+    $('todoCount').hidden = !todos.length;
+    $('todoCount').textContent = todos.length;
+    $('todoList').innerHTML = todos.map((t) =>
+      `<li data-id="${t.id}"><span class="term">${esc(t.term)}</span><button type="button" data-done="${t.id}">Erledigt</button></li>`
+    ).join('');
+    $('todoEmpty').hidden = todos.length > 0;
+  }
+
+  // Akkordeon-Zustand merken
+  $('accordions').addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (!d.dataset || !d.dataset.key || $('search').value.trim()) return;
+    d.open ? openSet.add(d.dataset.key) : openSet.delete(d.dataset.key);
+  }, true);
+
+  // Durchstreichen
+  $('accordions').addEventListener('click', async (e) => {
+    const li = e.target.closest('li.food');
+    if (!li) return;
+    const f = foods.find((x) => x.id === Number(li.dataset.id));
+    if (!f) return;
+    f.crossed = !f.crossed;
+    render(); cacheNow();
+    try {
+      await api(`/fodmap_foods?id=eq.${f.id}`, { method: 'PATCH', body: JSON.stringify({ crossed: f.crossed }) });
+    } catch (err) {
+      f.crossed = !f.crossed;
+      render(); cacheNow();
+      setStatus('Speichern fehlgeschlagen – bist du online?');
+    }
+  });
+
+  // To-dos
+  async function addTodo(term) {
+    term = term.trim();
+    if (!term) return false;
+    if (todos.some((t) => norm(t.term) === norm(term))) return true;
+    try {
+      const [row] = await api('/fodmap_todos', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ term }) });
+      todos.push(row); cacheNow(); render();
+      return true;
+    } catch (e) {
+      setStatus('Speichern fehlgeschlagen – bist du online?');
+      return false;
     }
   }
+  $('todoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (await addTodo($('todoTerm').value)) $('todoTerm').value = '';
+  });
+  $('todoList').addEventListener('click', async (e) => {
+    const id = Number(e.target.dataset.done);
+    if (!id) return;
+    const before = todos;
+    todos = todos.filter((t) => t.id !== id);
+    render(); cacheNow();
+    try { await api(`/fodmap_todos?id=eq.${id}`, { method: 'DELETE' }); }
+    catch (err) { todos = before; render(); cacheNow(); setStatus('Löschen fehlgeschlagen – bist du online?'); }
+  });
+  $('notFound').addEventListener('click', async (e) => {
+    if (e.target.id !== 'addFromSearch') return;
+    if (await addTodo($('search').value)) { $('search').value = ''; showTab('todo'); }
+  });
 
-  function renderResult() {
-    const el = $('result');
-    const q = norm($('search').value);
-    if (!q) { el.hidden = true; return; }
-    el.hidden = false;
-    const all = [...words('no').map((w) => [w, 'no']), ...words('yes').map((w) => [w, 'yes'])]
-      .filter(([w]) => norm(w).includes(q));
-    const exact = all.find(([w]) => norm(w) === q);
-    const label = { yes: 'Mjam', no: 'Igitt' };
-    const cls = (w) => (isCrossed(w) ? ' crossed' : '');
-
-    if (!all.length) {
-      el.className = 'result is-none';
-      el.innerHTML = `Nicht gefunden<button class="link" id="addFromSearch" type="button">„${esc($('search').value.trim())}“ hinzufügen</button>`;
-    } else if (exact || all.length === 1) {
-      const [w, k] = exact || all[0];
-      el.className = `result is-${k}`;
-      el.innerHTML = `<span class="${cls(w).trim()}">${esc(w)}</span> – ${label[k]}`;
-    } else {
-      el.className = 'result is-mixed';
-      el.innerHTML = all.slice(0, 20).map(([w, k]) =>
-        `<div class="row ${k}"><span class="${cls(w).trim()}">${esc(w)}</span><small>${label[k]}</small></div>`
-      ).join('');
-    }
+  // Tabs
+  function showTab(name) {
+    const todo = name === 'todo';
+    $('viewList').hidden = todo;
+    $('viewTodo').hidden = !todo;
+    $('tabList').classList.toggle('active', !todo);
+    $('tabTodo').classList.toggle('active', todo);
+    $('search').hidden = todo;
+    render();
   }
-
-  const render = () => { renderLists(); renderResult(); };
+  $('tabList').addEventListener('click', () => showTab('list'));
+  $('tabTodo').addEventListener('click', () => showTab('todo'));
 
   $('search').addEventListener('input', render);
-  document.addEventListener('click', (e) => {
-    const li = e.target.closest('li[data-w]');
-    if (li) {
-      const n = norm(li.dataset.w);
-      user.crossed = isCrossed(n) ? user.crossed.filter((x) => x !== n) : [...user.crossed, n];
-      save(); render();
-    }
-    if (e.target.id === 'addFromSearch') openAdd($('search').value.trim());
-  });
+  $('showAdditional').addEventListener('change', render);
 
-  // Hinzufügen-Dialog
-  const dlg = $('addDialog');
-  function openAdd(prefill) {
-    $('addWord').value = prefill || '';
-    $('addMsg').hidden = true;
-    dlg.showModal();
-    $('addWord').focus();
-  }
-  $('openAdd').addEventListener('click', () => openAdd(''));
-  $('cancelAdd').addEventListener('click', () => dlg.close());
-  $('addForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const word = $('addWord').value.trim();
-    if (!word) return;
-    const existing = kindOf(word);
-    if (existing) {
-      $('addMsg').textContent = `„${word}“ gibt es schon (${existing === 'yes' ? 'Mjam' : 'Igitt'}).`;
-      $('addMsg').hidden = false;
-      return;
-    }
-    const kind = new FormData($('addForm')).get('kind');
-    user.added[kind].push(word);
-    save();
-    dlg.close();
-    $('search').value = word;
-    render();
-  });
-
-  render();
+  load();
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('./service-worker.js').catch(() => {});

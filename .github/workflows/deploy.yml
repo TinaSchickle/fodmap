@@ -26,7 +26,7 @@ jobs:
       - name: Dateien zusammenstellen
         run: |
           mkdir site
-          cp index.html style.css app.js words.js manifest.json service-worker.js site/
+          cp index.html style.css app.js config.js manifest.json service-worker.js site/
           cp -r icons site/icons
       - uses: actions/upload-pages-artifact@v5
         with:

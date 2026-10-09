@@ -14,40 +14,34 @@
   <body>
     <header class="top">
       <input id="search" type="search" placeholder="Was möchtest du essen?" autocomplete="off" autocapitalize="none" enterkeyhint="search" />
-      <button id="openAdd" class="btn-add" type="button">+ Hinzufügen</button>
+      <nav class="tabs" role="tablist">
+        <button id="tabList" role="tab" class="tab active" type="button">Liste</button>
+        <button id="tabTodo" role="tab" class="tab" type="button">To-do <span id="todoCount" class="badge" hidden>0</span></button>
+      </nav>
     </header>
 
-    <section id="result" class="result" aria-live="polite" hidden></section>
+    <div id="status" class="status" hidden></div>
 
-    <main class="cols">
-      <section class="col col-no">
-        <h2>Igitt 🙅</h2>
-        <ul id="listNo"></ul>
-      </section>
-      <section class="col col-yes">
-        <h2>Mjam 😋</h2>
-        <ul id="listYes"></ul>
-      </section>
-    </main>
-    <p class="hint">Tipp: Wort antippen = durchstreichen (nochmal antippen = wieder normal).</p>
+    <section id="viewList">
+      <label class="switch">
+        <input id="showAdditional" type="checkbox" />
+        <span>Auch Fertigprodukte &amp; Varianten zeigen</span>
+      </label>
+      <div id="notFound" class="notfound" hidden></div>
+      <div id="accordions"></div>
+      <p class="hint">Portion = Maximum pro Mahlzeit. Mehrere gelbe Lebensmittel in einer Mahlzeit können zusammen zu viel sein. Wort antippen = durchstreichen. „?“ = Wert unsicher.</p>
+    </section>
 
-    <dialog id="addDialog">
-      <form id="addForm" method="dialog">
-        <h3>Neues Wort</h3>
-        <input id="addWord" type="text" placeholder="Wort" autocomplete="off" required />
-        <div class="toggle" role="radiogroup" aria-label="Igitt oder Mjam">
-          <label class="t-no"><input type="radio" name="kind" value="no" /><span>Igitt</span></label>
-          <label class="t-yes"><input type="radio" name="kind" value="yes" checked /><span>Mjam</span></label>
-        </div>
-        <p id="addMsg" class="msg" hidden></p>
-        <div class="actions">
-          <button type="button" id="cancelAdd" class="btn-ghost">Abbrechen</button>
-          <button type="submit" class="btn-add">Hinzufügen</button>
-        </div>
+    <section id="viewTodo" hidden>
+      <form id="todoForm" class="todo-form">
+        <input id="todoTerm" type="text" placeholder="Begriff zum Nachschlagen" autocomplete="off" required />
+        <button type="submit" class="btn-add">+</button>
       </form>
-    </dialog>
+      <ul id="todoList" class="todo-list"></ul>
+      <p id="todoEmpty" class="hint" hidden>Nichts offen. 🎉</p>
+    </section>
 
-    <script src="./words.js"></script>
+    <script src="./config.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

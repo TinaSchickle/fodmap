@@ -1,7 +1,7 @@
-// Network-first: online bekommst du immer die neueste Version (z. B. neue
-// Wörter aus words.js), offline kommt die zuletzt gecachte Fassung.
+// Network-first: online bekommst du immer die neueste Version (z. B. neue Daten
+// Einträge), offline kommt die zuletzt gecachte Fassung.
 const CACHE_NAME = 'fodmap-cache';
-const SHELL = ['./', './index.html', './style.css', './app.js', './words.js', './manifest.json'];
+const SHELL = ['./', './index.html', './style.css', './app.js', './config.js', './manifest.json'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(SHELL)));
