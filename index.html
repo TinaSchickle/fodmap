@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#2f9e63" />
+    <meta name="description" content="FODMAP: Was darf auf den Teller – und was lieber nicht?" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+    <title>Mjam &amp; Igitt</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <input id="search" type="search" placeholder="Was möchtest du essen?" autocomplete="off" autocapitalize="none" enterkeyhint="search" />
+      <button id="openAdd" class="btn-add" type="button">+ Hinzufügen</button>
+    </header>
+
+    <section id="result" class="result" aria-live="polite" hidden></section>
+
+    <main class="cols">
+      <section class="col col-no">
+        <h2>Igitt 🙅</h2>
+        <ul id="listNo"></ul>
+      </section>
+      <section class="col col-yes">
+        <h2>Mjam 😋</h2>
+        <ul id="listYes"></ul>
+      </section>
+    </main>
+    <p class="hint">Tipp: Wort antippen = durchstreichen (nochmal antippen = wieder normal).</p>
+
+    <dialog id="addDialog">
+      <form id="addForm" method="dialog">
+        <h3>Neues Wort</h3>
+        <input id="addWord" type="text" placeholder="Wort" autocomplete="off" required />
+        <div class="toggle" role="radiogroup" aria-label="Igitt oder Mjam">
+          <label class="t-no"><input type="radio" name="kind" value="no" /><span>Igitt</span></label>
+          <label class="t-yes"><input type="radio" name="kind" value="yes" checked /><span>Mjam</span></label>
+        </div>
+        <p id="addMsg" class="msg" hidden></p>
+        <div class="actions">
+          <button type="button" id="cancelAdd" class="btn-ghost">Abbrechen</button>
+          <button type="submit" class="btn-add">Hinzufügen</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./words.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
