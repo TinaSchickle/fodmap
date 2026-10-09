@@ -84,7 +84,7 @@
     const no = list.filter((f) => f.rating === 'red');
 
     $('accordions').innerHTML =
-      groupHtml('yes', '<span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>Siii', yes, q) + groupHtml('no', '<span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Nope', no, q);
+      groupHtml('yes', '<span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>Siii', yes, q) + groupHtml('no', '<span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Nope', no, q);
 
     const nf = $('notFound');
     nf.hidden = !(q && !list.length);
@@ -96,7 +96,7 @@
     $('todoCount').hidden = !todos.length;
     $('todoCount').textContent = todos.length;
     $('todoList').innerHTML = todos.map((t) =>
-      `<li data-id="${t.id}"><span class="term">${esc(t.term)}</span><button type="button" data-done="${t.id}">Erledigt</button></li>`
+      `<li data-id="${t.id}"><span class="term">${esc(t.term)}</span><button type="button" data-done="${t.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Erledigt</button></li>`
     ).join('');
     $('todoEmpty').hidden = todos.length > 0;
   }
@@ -165,6 +165,7 @@
     $('tabList').classList.toggle('active', !todo);
     $('tabTodo').classList.toggle('active', todo);
     document.querySelector('.search-wrap').hidden = todo;
+    document.querySelector('.tabs').dataset.active = name;
     render();
   }
   $('tabList').addEventListener('click', () => showTab('list'));
