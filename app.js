@@ -53,7 +53,7 @@
 
   function foodRow(f) {
     return `<li class="food ${f.rating}${f.crossed ? ' crossed' : ''}" data-id="${f.id}">` +
-      `<span class="name">${esc(f.name)}</span>` +
+      `<span class="dot"></span><span class="name">${esc(f.name)}</span>` +
       (f.verify ? '<span class="q" title="Wert unsicher">?</span>' : '') +
       `<span class="portion">${portionText(f)}</span></li>`;
   }
@@ -84,7 +84,7 @@
     const no = list.filter((f) => f.rating === 'red');
 
     $('accordions').innerHTML =
-      groupHtml('yes', 'Siii 😋', yes, q) + groupHtml('no', 'Nope 🙅', no, q);
+      groupHtml('yes', '<span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>Siii', yes, q) + groupHtml('no', '<span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Nope', no, q);
 
     const nf = $('notFound');
     nf.hidden = !(q && !list.length);
@@ -164,7 +164,7 @@
     $('viewTodo').hidden = !todo;
     $('tabList').classList.toggle('active', !todo);
     $('tabTodo').classList.toggle('active', todo);
-    $('search').hidden = todo;
+    document.querySelector('.search-wrap').hidden = todo;
     render();
   }
   $('tabList').addEventListener('click', () => showTab('list'));
