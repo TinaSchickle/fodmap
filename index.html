@@ -29,7 +29,8 @@
       </label>
       <div id="notFound" class="notfound" hidden></div>
       <div id="accordions"></div>
-      <section class="legend">
+      <div class="legend-wrap"><button type="button" id="openLegend" class="legend-btn">ⓘ Legende</button></div>
+      <dialog id="legendDialog" class="legend">
         <h3>So liest du die Liste</h3>
         <dl>
           <div class="lg green"><dt>Grüner Streifen</dt><dd>Unbedenklich bis zur angegebenen Portion (z. B. „bis 100 g“). „ohne Grenze“ heißt: keine Grenze bekannt.</dd></div>
@@ -43,7 +44,8 @@
           <div class="lg plain"><dt>Stacking</dt><dd>Mehrere gelbe Lebensmittel in einer Mahlzeit können zusammen zu viel sein.</dd></div>
         </dl>
         <p class="fine">Die Werte stammen aus Monash-nahen Quellen und sind nicht offiziell von Monash. Im Zweifel gilt die Monash-App. Kein Ersatz für ärztliche oder ernährungstherapeutische Beratung.</p>
-      </section>
+        <button type="button" id="closeLegend" class="legend-close">Schließen</button>
+      </dialog>
     </section>
 
     <section id="viewTodo" hidden>

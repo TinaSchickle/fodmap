@@ -173,6 +173,10 @@
   $('search').addEventListener('input', render);
   $('showAdditional').addEventListener('change', render);
 
+  $('openLegend').addEventListener('click', () => $('legendDialog').showModal());
+  $('closeLegend').addEventListener('click', () => $('legendDialog').close());
+  $('legendDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+
   load();
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {

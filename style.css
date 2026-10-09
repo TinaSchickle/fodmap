@@ -104,7 +104,11 @@ ul.foods { list-style: none; margin: 6px 0 0; padding: 0; }
 
 [hidden] { display: none !important; }
 
-.legend { margin: 24px 0 0; padding: 16px; border-radius: 16px; background: #fff; }
+.legend-wrap { text-align: center; margin-top: 16px; }
+.legend-btn { border: 0; background: none; color: #888; font-size: 13px; padding: 6px 10px; text-decoration: underline; }
+dialog.legend { border: 0; padding: 16px; border-radius: 18px; width: min(92vw, 420px); max-height: 85dvh; overflow-y: auto; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+dialog.legend::backdrop { background: rgba(0,0,0,.4); }
+.legend-close { display: block; width: 100%; margin-top: 12px; padding: 12px; border: 0; border-radius: 12px; background: var(--green-strong); color: #fff; font-weight: 600; }
 .legend h3 { margin: 0 0 10px; font-size: 18px; }
 .legend dl { margin: 0; }
 .lg { padding: 8px 10px; margin: 6px 0; border-radius: 10px; border-left: 8px solid #d9d2c5; background: #faf7f1; }
