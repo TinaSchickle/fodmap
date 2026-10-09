@@ -84,7 +84,7 @@
     const no = list.filter((f) => f.rating === 'red');
 
     $('accordions').innerHTML =
-      groupHtml('yes', 'Mjam 😋', yes, q) + groupHtml('no', 'Igitt 🙅', no, q);
+      groupHtml('yes', 'Siii 😋', yes, q) + groupHtml('no', 'Nope 🙅', no, q);
 
     const nf = $('notFound');
     nf.hidden = !(q && !list.length);
