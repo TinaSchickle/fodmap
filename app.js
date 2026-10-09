@@ -7,6 +7,8 @@
   const norm = (s) => s.trim().toLowerCase();
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  const CAT_ORDER = ['Obst', 'Gemüse', 'Nüsse und Samen', 'Hülsenfrüchte', 'Getreide und Backwaren', 'Milchprodukte und Alternativen', 'Fleisch, Fisch und Ei', 'Fette und Öle', 'Getränke', 'Süßes und Süßungsmittel', 'Gewürze und Kräuter', 'Saucen und Würzmittel', 'Snacks und Fertigprodukte'];
+  const catRank = (c) => { const i = CAT_ORDER.indexOf(c); return i < 0 ? 99 : i; };
   let foods = [];
   let todos = [];
   const openSet = new Set(['yes']); // aufgeklappte Gruppen (Schlüssel: 'yes', 'no', 'yes|Obst' …)
@@ -62,7 +64,7 @@
       if (!cats.has(f.category)) cats.set(f.category, []);
       cats.get(f.category).push(f);
     }
-    const inner = [...cats.entries()].map(([cat, list]) => {
+    const inner = [...cats.entries()].sort((a, b) => catRank(a[0]) - catRank(b[0])).map(([cat, list]) => {
       const k = `${key}|${cat}`;
       return `<details class="cat" data-key="${esc(k)}"${q || openSet.has(k) ? ' open' : ''}>` +
         `<summary>${esc(cat)}<span class="count">${list.length}</span></summary>` +
