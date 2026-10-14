@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./style.css?v=3" />
+    <link rel="stylesheet" href="./style.css?v=4" />
   </head>
   <body>
     <header class="top">
@@ -30,6 +30,7 @@
       </div>
       <nav class="tabs" role="tablist" data-active="list">
         <button id="tabList" role="tab" class="tab active" type="button">Liste</button>
+        <button id="tabDish" role="tab" class="tab" type="button">Gericht <span id="dishCount" class="badge" hidden>0</span></button>
         <button id="tabTodo" role="tab" class="tab" type="button">To-do <span id="todoCount" class="badge" hidden>0</span></button>
       </nav>
     </header>
@@ -56,11 +57,23 @@
           <div class="lg plain"><dt>Durchgestrichen</dt><dd>Antippen streicht ein Lebensmittel durch („mag ich nicht / nehme ich nicht auf“). Nochmal antippen hebt es auf.</dd></div>
           <div class="lg plain"><dt>Fertigprodukte &amp; Varianten</dt><dd>Mit dem Schalter oben blendest du sie ein. Bei einer Suche werden sie immer mitgesucht.</dd></div>
           <div class="lg plain"><dt>Nicht gefunden?</dt><dd>Fehlt etwas, nicht als unbedenklich annehmen. Über „Als To-do merken“ wird es später nachgeschlagen.</dd></div>
+          <div class="lg plain"><dt>Gericht berechnen</dt><dd>Kreis vor einer Zutat antippen, dann im Tab „Gericht“ die Gramm eingeben. Dort siehst du pro Zutat den Anteil an der sicheren Portion und die Summe.</dd></div>
           <div class="lg plain"><dt>Stacking</dt><dd>Mehrere gelbe Lebensmittel in einer Mahlzeit können zusammen zu viel sein.</dd></div>
         </dl>
         <p class="fine">Die Werte stammen aus Monash-nahen Quellen und sind nicht offiziell von Monash. Im Zweifel gilt die Monash-App. Kein Ersatz für ärztliche oder ernährungstherapeutische Beratung.</p>
         <button type="button" id="closeLegend" class="legend-close">Schließen</button>
       </dialog>
+    </section>
+
+    <section id="viewDish" hidden>
+      <div id="dishEmpty" class="dish-empty">
+        <p><strong>Dein Gericht ist leer.</strong></p>
+        <p>Tippe in der Liste den Kreis vor einem Lebensmittel an, um es ins Gericht zu legen. Pro Zutat startest du mit 500 g, die Menge kannst du hier ändern.</p>
+      </div>
+      <div id="dishSummary" class="dish-summary" hidden></div>
+      <ul id="dishList" class="dish-list"></ul>
+      <button type="button" id="dishClear" class="dish-clear" hidden>Gericht leeren</button>
+      <p id="dishFine" class="fine" hidden>Anteil = Gramm ÷ sichere Portion der Zutat. Die Summe ist ein vorsichtiger Richtwert, kein gemessener Wert pro FODMAP-Stoff.</p>
     </section>
 
     <section id="viewTodo" hidden>
@@ -72,7 +85,7 @@
       <p id="todoEmpty" class="hint" hidden>Nichts offen.</p>
     </section>
 
-    <script src="./config.js?v=3"></script>
-    <script src="./app.js?v=3"></script>
+    <script src="./config.js?v=4"></script>
+    <script src="./app.js?v=4"></script>
   </body>
 </html>
