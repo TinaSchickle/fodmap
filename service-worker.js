@@ -1,6 +1,6 @@
 // Network-first: online bekommst du immer die neueste Version (z. B. neue Daten
 // Einträge), offline kommt die zuletzt gecachte Fassung.
-const CACHE_NAME = 'fodmap-cache';
+const CACHE_NAME = 'fodmap-cache-v2';
 const SHELL = ['./', './index.html', './style.css', './app.js', './config.js', './manifest.json'];
 
 self.addEventListener('install', (event) => {
@@ -19,7 +19,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request.url, { cache: 'no-cache' })
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((c) => c.put(event.request, copy));
